@@ -14,8 +14,16 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
+    - name: Check for required secrets
+      run: |
+        if [ -z "${{ secrets.SERVER_HOST }}" ]; then echo "ERROR: SERVER_HOST secret is not set."; exit 1; fi
+        if [ -z "${{ secrets.SERVER_USER }}" ]; then echo "ERROR: SERVER_USER secret is not set."; exit 1; fi
+        if [ -z "${{ secrets.SERVER_PORT }}" ]; then echo "ERROR: SERVER_PORT secret is not set."; exit 1; fi
+        if [ -z "${{ secrets.SERVER_SSH_KEY }}" ]; then echo "ERROR: SERVER_SSH_KEY secret is not set."; exit 1; fi
+        echo "All required secrets are present."
+
     - name: Deploy with SCP
       run: |
         echo "${{ secrets.SERVER_SSH_KEY }}" > private_key.pem
         chmod 600 private_key.pem
-        scp -o StrictHostKeyChecking=no -i private_key.pem -P ${{ secrets.SERVER_PORT }} -r ./* ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/sao_paulo/
+        scp -o StrictHostKeyChecking=no -r -P ${{ secrets.SERVER_PORT }} -i private_key.pem ./* ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/sao_paulo/
