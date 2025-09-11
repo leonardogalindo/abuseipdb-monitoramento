@@ -22,8 +22,15 @@ jobs:
         if [ -z "${{ secrets.SERVER_SSH_KEY }}" ]; then echo "ERROR: SERVER_SSH_KEY secret is not set."; exit 1; fi
         echo "All required secrets are present."
 
-    - name: Deploy with SCP
+    - name: Deploy with rsync
       run: |
         echo "${{ secrets.SERVER_SSH_KEY }}" > private_key.pem
         chmod 600 private_key.pem
-        scp -o StrictHostKeyChecking=no -r -P ${{ secrets.SERVER_PORT }} -i private_key.pem ./* ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/sao_paulo/
+        rsync -avz -e "ssh -p ${{ secrets.SERVER_PORT }} -i private_key.pem -o StrictHostKeyChecking=no" \
+          --exclude '.git/' \
+          --exclude '.gitignore' \
+          --exclude '.pytest_cache/' \
+          --exclude '.venv/' \
+          --exclude 'tests/' \
+          --exclude 'doc/' \
+          ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/sao_paulo/
