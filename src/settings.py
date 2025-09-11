@@ -33,7 +33,7 @@ LOG_CONFIG_DEV = {
 }
 
 # --- Configuração de Log para PRODUÇÃO ---
-# (Saída no console, nível INFO, formato estruturado)
+# (Saída no console e em arquivos, nível INFO, formato estruturado)
 LOG_CONFIG_PROD = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -48,10 +48,24 @@ LOG_CONFIG_PROD = {
             "formatter": "production_formatter",
             "level": "INFO",
         },
+        "errorFileHandler": {
+            "class": "logging.FileHandler",
+            "formatter": "production_formatter",
+            "filename": os.path.join("logs", "error.log"),
+            "encoding": "utf-8",
+            "level": "ERROR",
+        },
+        "auditFileHandler": {
+            "class": "logging.FileHandler",
+            "formatter": "production_formatter",
+            "filename": os.path.join("logs", "audit.log"),
+            "encoding": "utf-8",
+            "level": "INFO",
+        },
     },
-    "root": {"handlers": ["consoleHandler"], "level": "INFO"},
+    "root": {"handlers": ["consoleHandler", "errorFileHandler", "auditFileHandler"], "level": "INFO"},
     "loggers": {
-        "requests": {"handlers": ["consoleHandler"], "level": "WARNING", "propagate": False}
+        "requests": {"handlers": ["consoleHandler", "errorFileHandler"], "level": "WARNING", "propagate": False}
     },
 }
 
